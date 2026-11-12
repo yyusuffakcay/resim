@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <!-- PWA ve Mobil Uygulama Hissi İçin Meta Etiketleri (Yakınlaştırmayı engeller, tam ekran yapar) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#16a34a">
+    
+    <!-- ANA EKRAN İÇİ UYGULAMA İSMİ VE SİMGESİ -->
+    <meta name="apple-mobile-web-app-title" content="Afiş Aracı">
+    <meta name="application-name" content="Afiş Aracı">
+    
+    <!-- Yeşil Arka Planlı Şık Kitap Simgesi -->
+    <link rel="icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%2316a34a'/%3E%3Cpath fill='%23ffffff' d='M256 160c-35-26-87-32-144-32v224c57 0 109 6 144 32 35-26 87-32 144-32V128c-57 0-109 6-144 32z'/%3E%3C/svg%3E" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%2316a34a'/%3E%3Cpath fill='%23ffffff' d='M256 160c-35-26-87-32-144-32v224c57 0 109 6 144 32 35-26 87-32 144-32V128c-57 0-109 6-144 32z'/%3E%3C/svg%3E">
+    
+    <title>İlk İkra Afiş Aracı</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/heic2any/dist/heic2any.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@700&family=Cinzel:wght@700&family=Oswald:wght@600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overscroll-behavior-y: none; }
+        /* Telefondaki kaydırmaları ve dokunmatik sorunları önlemek için */
+        canvas { max-width: 100%; height: auto; display: block; margin: 0 auto; touch-action: none; user-select: none; -webkit-user-select: none; }
+        input[type="range"] { accent-color: #16a34a; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-2 md:p-8 pb-20">
+
+    <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-4 md:p-6">
+        <h1 class="text-xl md:text-2xl font-bold text-center text-green-700 mb-6 flex items-center justify-center gap-2">
+            <span>✨</span> Medrese Afiş Tasarlayıcı
+        </h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+            <!-- 1. Resim -->
+            <div class="p-3 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">1. Ana Resim 📸</label>
+                <input type="file" id="mainImageInput" accept="image/*,.heic" class="block w-full text-xs text-gray-500 file:mr-2 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-green-100 file:text-green-700 file:font-bold">
+            </div>
+
+            <!-- 2. Resim -->
+            <div class="p-3 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">2. İkinci Resim (İsteğe Bağlı) 🖼️</label>
+                <input type="file" id="img2Input" accept="image/*,.heic" class="block w-full text-xs text-gray-500 file:mr-2 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-green-100 file:text-green-700 file:font-bold">
+            </div>
+
+            <!-- Logo -->
+            <div class="p-3 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">3. Logo (İlk İkra) 🔰</label>
+                <input type="file" id="logoImageInput" accept="image/*,.heic" class="block w-full text-xs text-gray-500 file:mr-2 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-100 file:text-blue-700 file:font-bold">
+            </div>
+        </div>
+
+        <div id="layoutOptions" class="hidden mb-4 p-3 bg-green-50 rounded-lg text-center border border-green-200">
+            <span class="font-bold text-green-800 block mb-2 text-sm">Resim Birleştirme Yönü</span>
+            <div class="flex justify-center gap-4 mb-3">
+                <label class="inline-flex items-center cursor-pointer bg-white px-3 py-1 rounded shadow-sm border border-green-100">
+                    <input type="radio" name="layout" value="vertical" checked class="text-green-600 focus:ring-green-500 w-4 h-4">
+                    <span class="ml-2 text-sm font-semibold">⬇️ Alt Alta</span>
+                </label>
+                <label class="inline-flex items-center cursor-pointer bg-white px-3 py-1 rounded shadow-sm border border-green-100">
+                    <input type="radio" name="layout" value="horizontal" class="text-green-600 focus:ring-green-500 w-4 h-4">
+                    <span class="ml-2 text-sm font-semibold">➡️ Yan Yana</span>
+                </label>
+            </div>
+            <label class="inline-flex items-center cursor-pointer bg-blue-50 px-3 py-2 rounded-lg border border-blue-200 shadow-inner w-full justify-center">
+                <input type="checkbox" id="blendCheck" class="text-blue-600 focus:ring-blue-500 w-5 h-5 rounded" checked>
+                <span class="ml-2 text-sm font-bold text-blue-800">🌊 Resimleri Birbirine Yumuşak Kaynaştır (Geçiş Efekti)</span>
+            </label>
+        </div>
+
+        <!-- Ayarlar -->
+        <div class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <h3 class="font-bold text-gray-800 mb-3 text-sm border-b pb-1">Logo Ayarları</h3>
+            <label class="block font-semibold text-gray-700 mb-1 text-sm">Saydamlık (Opaklık)</label>
+            <input type="range" id="opacitySlider" min="0.1" max="1" step="0.05" value="0.75" class="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer">
+            
+            <label class="block font-semibold text-gray-700 mt-3 mb-1 text-sm">Logo Boyutu</label>
+            <input type="range" id="sizeSlider" min="0.05" max="0.5" step="0.02" value="0.2" class="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer">
+
+            <div class="mt-4 p-3 border border-green-200 rounded-lg bg-green-100 shadow-inner">
+                <label class="flex items-center space-x-3 cursor-pointer">
+                    <input type="checkbox" id="removeWhiteCheck" class="w-5 h-5 text-green-600 rounded border-gray-400">
+                    <span class="font-bold text-green-900 text-sm">Arkadaki Beyazlığı Sil</span>
+                </label>
+                <div id="toleranceContainer" class="hidden mt-3">
+                    <label class="block text-xs font-semibold text-green-800 mb-1">Silme Hassasiyeti (Hata kalırsa sağa çek)</label>
+                    <input type="range" id="toleranceSlider" min="100" max="254" step="1" value="230" class="w-full h-2 bg-green-300 rounded-lg appearance-none">
+                </div>
+            </div>
+        </div>
+
+        <!-- Yazı Ekleme Ayarları -->
+        <div class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <h3 class="font-bold text-gray-800 mb-2 text-sm border-b pb-1">Havalı Yazı Ekle (İsteğe Bağlı) ✍️</h3>
+            <textarea id="customTextInput" rows="2" placeholder="Örn: 5. ve 6. Sınıf Derslerimiz Tüm Coşkusuyla Devam Ediyor..." class="w-full p-2 border border-gray-300 rounded text-sm mb-3 focus:ring-2 focus:ring-green-500 outline-none"></textarea>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Renk</label>
+                    <input type="color" id="textColorInput" value="#ffffff" class="w-full h-8 rounded cursor-pointer border-0 p-0">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Boyut</label>
+                    <input type="range" id="textSizeSlider" min="0.02" max="0.25" step="0.01" value="0.08" class="w-full h-2 mt-2 bg-gray-300 rounded-lg appearance-none">
+                </div>
+                <div>
+                     <label class="block text-xs font-semibold text-gray-700 mb-1">Şekil / Stil</label>
+                     <select id="textStyleSelect" class="w-full p-1 border border-gray-300 rounded text-xs md:text-sm bg-white font-semibold shadow-sm">
+                         <option value="shadow">3D Gölgeli</option>
+                         <option value="stroke">İçi Boş (Çizgili)</option>
+                         <option value="neon">Neon Parlama</option>
+                         <option value="classic">Klasik Düz</option>
+                     </select>
+                </div>
+                <div>
+                     <label class="block text-xs font-semibold text-gray-700 mb-1">Yazı Tipi (Font)</label>
+                     <select id="fontFamilySelect" class="w-full p-1 border border-gray-300 rounded text-xs md:text-sm bg-white font-semibold shadow-sm">
+                         <option value="'Bebas Neue', sans-serif">Modern Kalın</option>
+                         <option value="'Oswald', sans-serif">Sportif / Dik</option>
+                         <option value="'Caveat', cursive">El Yazısı (Kıvrımlı)</option>
+                         <option value="'Cinzel', serif">Tarihi / Medrese</option>
+                         <option value="Arial, sans-serif">Klasik (Arial)</option>
+                     </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Önizleme ve Canvas -->
+        <div id="dragInstruction" class="hidden bg-blue-50 border border-blue-200 text-blue-700 px-3 py-2 rounded-lg mb-3 text-xs md:text-sm text-center font-semibold shadow-sm animate-pulse">
+            👆 Logoyu veya Yazıyı parmağınızla tutarak istediğiniz yere sürükleyebilirsiniz.
+        </div>
+        
+        <div class="border-2 border-gray-300 rounded-lg bg-gray-200 overflow-hidden mb-6 flex items-center justify-center min-h-[250px] shadow-inner relative">
+            <canvas id="canvas" class="hidden"></canvas>
+            <div id="placeholderText" class="text-gray-500 text-center p-6 text-sm flex flex-col items-center">
+                <svg class="w-12 h-12 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                Resimleri yüklediğinizde önizleme burada görünecektir.
+            </div>
+        </div>
+
+        <!-- İndirme Butonu -->
+        <div class="text-center pb-4">
+            <button id="downloadBtn" class="w-full md:w-auto bg-green-600 text-white font-bold py-4 px-10 rounded-xl shadow-xl hover:bg-green-700 active:scale-95 transition transform disabled:opacity-50 disabled:cursor-not-allowed text-lg" disabled>
+                💾 Resmi Doğrudan İndir
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elementleri
+        const mainImageInput = document.getElementById('mainImageInput');
+        const logoImageInput = document.getElementById('logoImageInput');
+        const img2Input = document.getElementById('img2Input');
+        
+        const opacitySlider = document.getElementById('opacitySlider');
+        const sizeSlider = document.getElementById('sizeSlider');
+        const layoutOptions = document.getElementById('layoutOptions');
+        const layoutRadios = document.getElementsByName('layout');
+        
+        const removeWhiteCheck = document.getElementById('removeWhiteCheck');
+        const toleranceContainer = document.getElementById('toleranceContainer');
+        const toleranceSlider = document.getElementById('toleranceSlider');
+        
+        const customTextInput = document.getElementById('customTextInput');
+        const textColorInput = document.getElementById('textColorInput');
+        const textSizeSlider = document.getElementById('textSizeSlider');
+        const textStyleSelect = document.getElementById('textStyleSelect');
+        const fontFamilySelect = document.getElementById('fontFamilySelect');
+        const blendCheck = document.getElementById('blendCheck');
+        
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        const downloadBtn = document.getElementById('downloadBtn');
+        const placeholderText = document.getElementById('placeholderText');
+        const dragInstruction = document.getElementById('dragInstruction');
+
+        // Görüntü Nesneleri ve Durumları
+        let mainImg = new Image();
+        let logoImg = new Image();
+        let img2 = new Image();
+        let mainImgLoaded = false;
+        let logoImgLoaded = false;
+        let img2Loaded = false;
+
+        // Pozisyon ve Sürükleme Değişkenleri
+        let logoX = 0, logoY = 0, currentLogoWidth = 0, currentLogoHeight = 0;
+        let textX = 0, textY = 0, currentTextWidth = 0, currentTextHeight = 0;
+        
+        let positionInitialized = false;
+        let textPosInitialized = false;
+        
+        let isDraggingLogo = false;
+        let isDraggingText = false;
+        let startDragX = 0, startDragY = 0;
+
+        // Fotoğraf Yükleme ve HEIC Dönüştürme
+        async function processAndLoadImage(file, imgObj, successCallback) {
+            if (!file) return;
+            
+            canvas.classList.add('hidden');
+            placeholderText.classList.remove('hidden');
+            placeholderText.innerHTML = '<span class="text-green-600 font-bold animate-pulse">⏳ Fotoğraf işleniyor...</span>';
+            
+            try {
+                let blobToRead = file;
+                if (file.name.toLowerCase().endsWith('.heic') || file.type === 'image/heic') {
+                    placeholderText.innerHTML = '<span class="text-blue-600 font-bold animate-pulse">📱 iPhone formatı (HEIC) dönüştürülüyor...</span>';
+                    
+                    if (typeof heic2any === 'undefined') throw new Error("HEIC kütüphanesi yüklenemedi.");
+                    
+                    const result = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.8 });
+                    blobToRead = Array.isArray(result) ? result[0] : result;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    imgObj.onload = successCallback;
+                    imgObj.src = event.target.result;
+                };
+                reader.readAsDataURL(blobToRead);
+            } catch (err) {
+                console.error("Yükleme hatası:", err);
+                placeholderText.innerHTML = '<span class="text-red-600 font-bold">❌ Yükleme başarısız. Lütfen normal bir JPG/PNG deneyin.</span>';
+            }
+        }
+
+        // Ana Çizim Fonksiyonu
+        function drawImages() {
+            if (!mainImgLoaded) return;
+
+            let finalWidth = mainImg.width;
+            let finalHeight = mainImg.height;
+            let img2DrawWidth = 0, img2DrawHeight = 0, img2X = 0, img2Y = 0;
+            let layout = 'vertical';
+
+            // İki resim kontrolü ve Boyut Hesaplama
+            if (img2Loaded) {
+                layoutOptions.classList.remove('hidden');
+                for (const radio of layoutRadios) { if (radio.checked) layout = radio.value; }
+
+                if (layout === 'vertical') {
+                    img2DrawWidth = mainImg.width;
+                    img2DrawHeight = img2.height * (mainImg.width / img2.width);
+                    
+                    let overlapY = blendCheck.checked ? (img2DrawHeight * 0.25) : 0; // %25 oranında iç içe göm
+                    finalWidth = mainImg.width;
+                    finalHeight = mainImg.height + img2DrawHeight - overlapY;
+                    
+                    img2X = 0; img2Y = mainImg.height - overlapY;
+                } else {
+                    img2DrawHeight = mainImg.height;
+                    img2DrawWidth = img2.width * (mainImg.height / img2.height);
+                    
+                    let overlapX = blendCheck.checked ? (img2DrawWidth * 0.25) : 0; // %25 oranında iç içe göm
+                    finalWidth = mainImg.width + img2DrawWidth - overlapX;
+                    finalHeight = mainImg.height;
+                    
+                    img2X = mainImg.width - overlapX; img2Y = 0;
+                }
+            } else {
+                layoutOptions.classList.add('hidden');
+            }
+
+            canvas.width = finalWidth;
+            canvas.height = finalHeight;
+            
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Resmi Çiz
+            ctx.drawImage(mainImg, 0, 0, mainImg.width, mainImg.height);
+            
+            // 2. Resmi Çiz (Yumuşak Kaynaştırma / Geçiş Efekti ile)
+            if (img2Loaded) {
+                if (blendCheck.checked) {
+                    // Kaynaştırma için geçici bir canvas oluştur (Maske Yöntemi)
+                    const tCanvas = document.createElement('canvas');
+                    tCanvas.width = img2DrawWidth;
+                    tCanvas.height = img2DrawHeight;
+                    const tCtx = tCanvas.getContext('2d', { willReadFrequently: true });
+                    
+                    let overlap = (layout === 'vertical') ? (img2DrawHeight * 0.25) : (img2DrawWidth * 0.25);
+                    const grad = tCtx.createLinearGradient(
+                        0, 0, 
+                        layout === 'horizontal' ? overlap : 0, 
+                        layout === 'vertical' ? overlap : 0
+                    );
+                    
+                    // Önce maskeyi (siyah ve saydam alanları) çiziyoruz
+                    grad.addColorStop(0, 'rgba(0,0,0,0)'); 
+                    grad.addColorStop(1, 'rgba(0,0,0,1)'); 
+                    
+                    tCtx.fillStyle = grad;
+                    
+                    if (layout === 'horizontal') {
+                        tCtx.fillRect(0, 0, overlap, img2DrawHeight);
+                        tCtx.fillStyle = 'rgba(0,0,0,1)'; // Resmin kalanı tamamen opak olmalı
+                        tCtx.fillRect(overlap, 0, img2DrawWidth - overlap, img2DrawHeight);
+                    } else {
+                        tCtx.fillRect(0, 0, img2DrawWidth, overlap);
+                        tCtx.fillStyle = 'rgba(0,0,0,1)'; // Resmin kalanı tamamen opak olmalı
+                        tCtx.fillRect(0, overlap, img2DrawWidth, img2DrawHeight - overlap);
+                    }
+                    
+                    // Maske hazır, şimdi 2. resmi sadece bu maskenin izin verdiği yerlere çiz (source-in)
+                    tCtx.globalCompositeOperation = 'source-in';
+                    tCtx.drawImage(img2, 0, 0, img2DrawWidth, img2DrawHeight);
+                    
+                    // Kaynaşmış şeffaf resmi ana canvas'a ekle
+                    ctx.drawImage(tCanvas, img2X, img2Y);
+                } else {
+                    ctx.drawImage(img2, img2X, img2Y, img2DrawWidth, img2DrawHeight);
+                }
+            }
+
+            // Logo Çizimi
+            if (logoImgLoaded) {
+                const opacity = parseFloat(opacitySlider.value);
+                const sizeRatio = parseFloat(sizeSlider.value);
+
+                currentLogoWidth = canvas.width * sizeRatio;
+                currentLogoHeight = (logoImg.height / logoImg.width) * currentLogoWidth;
+
+                if (!positionInitialized) {
+                    logoX = canvas.width - currentLogoWidth - (canvas.width * 0.05); // Sağ alt kenar boşluğu
+                    logoY = canvas.height - currentLogoHeight - (canvas.height * 0.05);
+                    positionInitialized = true;
+                    dragInstruction.classList.remove('hidden');
+                }
+
+                // Sınır koruması
+                logoX = Math.max(0, Math.min(logoX, canvas.width - currentLogoWidth));
+                logoY = Math.max(0, Math.min(logoY, canvas.height - currentLogoHeight));
+
+                ctx.globalAlpha = opacity;
+                
+                let logoToDraw = logoImg;
+                // Beyaz Silme (Performanslı RGBA taraması)
+                if (removeWhiteCheck.checked) {
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = logoImg.width; tempCanvas.height = logoImg.height;
+                    const tCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
+                    tCtx.drawImage(logoImg, 0, 0);
+                    
+                    const imageData = tCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+                    const data = imageData.data;
+                    const tolerance = parseInt(toleranceSlider.value);
+                    
+                    for (let i = 0; i < data.length; i += 4) {
+                        if (data[i] >= tolerance && data[i+1] >= tolerance && data[i+2] >= tolerance) {
+                            data[i+3] = 0;
+                        }
+                    }
+                    tCtx.putImageData(imageData, 0, 0);
+                    logoToDraw = tempCanvas;
+                }
+
+                ctx.drawImage(logoToDraw, logoX, logoY, currentLogoWidth, currentLogoHeight);
+                ctx.globalAlpha = 1.0; 
+            }
+
+            // Yazı Çizimi (Yeni Stillerle Birlikte)
+            const textVal = customTextInput.value;
+            if (textVal.trim() !== "") {
+                const fontSize = canvas.width * parseFloat(textSizeSlider.value);
+                ctx.font = `${fontSize}px ${fontFamilySelect.value}`;
+                ctx.textBaseline = "top";
+                ctx.lineJoin = "round";
+
+                const lines = textVal.split('\n');
+                let maxLineWidth = 0;
+                
+                lines.forEach(line => {
+                    const width = ctx.measureText(line).width;
+                    if (width > maxLineWidth) maxLineWidth = width;
+                });
+
+                currentTextWidth = maxLineWidth;
+                currentTextHeight = lines.length * (fontSize * 1.2);
+
+                if (!textPosInitialized) {
+                    textX = canvas.width / 2;
+                    textY = canvas.height * 0.05; // Üstten biraz boşluk
+                    textPosInitialized = true;
+                    dragInstruction.classList.remove('hidden');
+                }
+
+                textX = Math.max(currentTextWidth/2, Math.min(textX, canvas.width - currentTextWidth/2));
+                textY = Math.max(0, Math.min(textY, canvas.height - currentTextHeight));
+
+                const textStyle = textStyleSelect.value;
+
+                lines.forEach((line, index) => {
+                    const lineWidth = ctx.measureText(line).width;
+                    const xPos = textX - (lineWidth / 2);
+                    const yPos = textY + (index * (fontSize * 1.2));
+                    
+                    if (textStyle === 'shadow') {
+                        // 3D Gölgeli Stil
+                        ctx.shadowColor = "rgba(0, 0, 0, 0.85)";
+                        ctx.shadowBlur = canvas.width * 0.006;
+                        ctx.shadowOffsetX = canvas.width * 0.003;
+                        ctx.shadowOffsetY = canvas.width * 0.003;
+                        ctx.fillStyle = textColorInput.value;
+                        ctx.fillText(line, xPos, yPos);
+                        ctx.shadowColor = "transparent"; // Efekti sıfırla
+                    } 
+                    else if (textStyle === 'stroke') {
+                        // İçi Boş Şekilli Stil (Sadece Dış Çizgi)
+                        ctx.lineWidth = fontSize * 0.035;
+                        ctx.strokeStyle = textColorInput.value;
+                        ctx.strokeText(line, xPos, yPos);
+                    } 
+                    else if (textStyle === 'neon') {
+                        // Neon Parlama Stili
+                        ctx.shadowColor = textColorInput.value;
+                        ctx.shadowBlur = fontSize * 0.5;
+                        ctx.fillStyle = "#ffffff"; // Neonun merkezi beyaz olur
+                        ctx.fillText(line, xPos, yPos);
+                        ctx.fillText(line, xPos, yPos); // Yoğunluk için 2 kez basılır
+                        ctx.shadowColor = "transparent"; // Efekti sıfırla
+                    } 
+                    else {
+                        // Klasik Düz
+                        ctx.fillStyle = textColorInput.value;
+                        ctx.fillText(line, xPos, yPos);
+                    }
+                });
+            }
+
+            canvas.classList.remove('hidden');
+            placeholderText.classList.add('hidden');
+            downloadBtn.disabled = false;
+        }
+
+        // --- MOBİL UYUMLU SÜRÜKLE BIRAK MANTIĞI ---
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            let clientX = e.clientX;
+            let clientY = e.clientY;
+            
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            }
+            
+            return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+        }
+
+        function handleDown(e) {
+            if (!mainImgLoaded) return;
+            const pos = getPos(e);
+            
+            // Yazı kontrolü (Daha geniş tıklama alanı için +20px tolerans)
+            const textVal = customTextInput.value;
+            if (textVal.trim() !== "" && textPosInitialized) {
+                if (pos.x >= (textX - currentTextWidth/2 - 20) && pos.x <= (textX + currentTextWidth/2 + 20) &&
+                    pos.y >= (textY - 20) && pos.y <= (textY + currentTextHeight + 20)) {
+                    isDraggingText = true;
+                    startDragX = pos.x - textX;
+                    startDragY = pos.y - textY;
+                    e.preventDefault(); // Sayfa kaymasını engelle
+                    return;
+                }
+            }
+
+            // Logo kontrolü
+            if (logoImgLoaded) {
+                if (pos.x >= logoX - 20 && pos.x <= logoX + currentLogoWidth + 20 &&
+                    pos.y >= logoY - 20 && pos.y <= logoY + currentLogoHeight + 20) {
+                    isDraggingLogo = true;
+                    startDragX = pos.x - logoX;
+                    startDragY = pos.y - logoY;
+                    e.preventDefault();
+                }
+            }
+        }
+
+        function handleMove(e) {
+            if (!isDraggingLogo && !isDraggingText) return;
+            e.preventDefault(); // Sürüklerken telefon ekranının aşağı yukarı kaymasını kesinlikle engeller
+            
+            const pos = getPos(e);
+            
+            if (isDraggingText) {
+                textX = pos.x - startDragX;
+                textY = pos.y - startDragY;
+            } else if (isDraggingLogo) {
+                logoX = pos.x - startDragX;
+                logoY = pos.y - startDragY;
+            }
+            
+            // Ekran yenileme oranını optimize etmek için requestAnimationFrame kullanılabilir ama bu uygulama için drawImages yeterince hızlı.
+            requestAnimationFrame(drawImages);
+        }
+
+        function handleUp() {
+            isDraggingLogo = false;
+            isDraggingText = false;
+        }
+
+        // Event Listeners (Mouse & Touch)
+        canvas.addEventListener('mousedown', handleDown, {passive: false});
+        canvas.addEventListener('mousemove', handleMove, {passive: false});
+        window.addEventListener('mouseup', handleUp);
+        
+        canvas.addEventListener('touchstart', handleDown, {passive: false});
+        canvas.addEventListener('touchmove', handleMove, {passive: false});
+        window.addEventListener('touchend', handleUp);
+        // ------------------------------
+
+        // Input Dinleyicileri
+        mainImageInput.addEventListener('change', e => {
+            processAndLoadImage(e.target.files[0], mainImg, () => {
+                mainImgLoaded = true; positionInitialized = false; drawImages();
+            });
+        });
+
+        img2Input.addEventListener('change', e => {
+            processAndLoadImage(e.target.files[0], img2, () => {
+                img2Loaded = true; positionInitialized = false; drawImages();
+            });
+        });
+
+        layoutRadios.forEach(r => r.addEventListener('change', () => { positionInitialized = false; drawImages(); }));
+
+        logoImageInput.addEventListener('change', e => {
+            processAndLoadImage(e.target.files[0], logoImg, () => {
+                logoImgLoaded = true; positionInitialized = false; drawImages();
+            });
+        });
+
+        blendCheck.addEventListener('change', drawImages);
+
+        opacitySlider.addEventListener('input', drawImages);
+        sizeSlider.addEventListener('input', drawImages);
+        
+        removeWhiteCheck.addEventListener('change', function() {
+            toleranceContainer.classList.toggle('hidden', !this.checked);
+            drawImages();
+        });
+        toleranceSlider.addEventListener('input', drawImages);
+
+        customTextInput.addEventListener('input', drawImages);
+        textColorInput.addEventListener('input', drawImages);
+        textSizeSlider.addEventListener('input', drawImages);
+        textStyleSelect.addEventListener('change', drawImages);
+        fontFamilySelect.addEventListener('change', () => {
+            document.fonts.ready.then(drawImages); // Font internetten inince yeniden çiz
+            drawImages();
+        });
+
+        // İnternetten fontların ilk yüklenişini garantiye al
+        document.fonts.ready.then(() => {
+            if (mainImgLoaded) drawImages();
+        });
+
+        // Doğrudan İndirme İşlemi
+        downloadBtn.addEventListener('click', () => {
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+            
+            // Gizli bir link oluştur ve otomatik tıkla
+            const link = document.createElement('a');
+            link.download = 'medrese_afis.jpg'; // İndirilecek dosyanın adı
+            link.href = dataUrl;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+    </script>
+</body>
+</html>
